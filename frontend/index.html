@@ -1,0 +1,288 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f6f5f0">
+  <title>StateCraft TOC — NFA to DFA Studio</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@500;600;700;800&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="/css/style.css">
+  <script src="https://unpkg.com/cytoscape@3.30.4/dist/cytoscape.min.js"></script>
+</head>
+
+<body>
+  <header class="topbar">
+    <a class="brand" href="#">
+      <span class="brand-mark" aria-hidden="true">
+        <svg viewBox="0 0 32 32" focusable="false">
+          <path d="M8 9.5 15.5 6l8.5 6.5-2 10-9 3.5-7-7z"></path>
+          <path d="m8 9.5 7.5 5.5 8.5-2.5M15.5 15v11"></path>
+          <circle cx="8" cy="9.5" r="2.5"></circle>
+          <circle cx="15.5" cy="6" r="2.5"></circle>
+          <circle cx="24" cy="12.5" r="2.5"></circle>
+          <circle cx="22" cy="22.5" r="2.5"></circle>
+          <circle cx="13" cy="26" r="2.5"></circle>
+          <circle cx="6" cy="19" r="2.5"></circle>
+        </svg>
+      </span>
+      <span>StateCraft <span class="brand-light">TOC</span></span>
+    </a>
+    <div class="top-label"><span class="live-dot"></span> Interactive Automata Studio</div>
+    <button id="themeToggle" class="theme-toggle" aria-label="Switch color theme">
+      <span id="themeIcon">☾</span><span id="themeName">Dark mode</span>
+    </button>
+  </header>
+
+  <main>
+    <section class="intro">
+      <div class="eyebrow"><span class="eyebrow-line"></span> THEORY OF COMPUTATION <span class="eyebrow-line"></span>
+      </div>
+      <h1>StateCraft <em>TOC</em></h1>
+      <p>Convert Nondeterministic Finite Automata (NFA) to Deterministic Finite Automata (DFA) using Subset
+        Construction.</p>
+      <div class="scope-note"><span>01</span> Define NFA <i>·</i> <span>02</span> Converted DFA &amp; Table <i>·</i>
+        <span>03</span> Step-by-Step Conversion <i>·</i> <span>04</span> String Acceptance Testing
+      </div>
+    </section>
+
+    <!-- 1 & 2: TOP WORKBENCH -->
+    <section class="workbench">
+      <!-- 1. LEFT: Redesigned Input Area -->
+      <div class="panel input-panel">
+        <div class="panel-heading">
+          <div>
+            <div class="step-label"><span>01</span> INPUT CONFIGURATION</div>
+            <h2>NFA Specification</h2>
+          </div>
+          <button class="text-button" id="exampleBtn" type="button">↻ Load example</button>
+        </div>
+
+        <!-- 1. States (Q) on top -->
+        <div class="states-section-card">
+          <div class="states-header">
+            <div>
+              <div class="field-title">States (Q)</div>
+              <small>Click "final" or circle to toggle accepting state</small>
+            </div>
+            <button class="add-button" id="addState" type="button">＋ Add state</button>
+          </div>
+          <div id="statesList" class="states-list"></div>
+        </div>
+
+        <!-- 2. Alphabet (Σ) and Start State (q₀) below States -->
+        <div class="config-grid">
+          <div class="field-card">
+            <label for="alphabetInput">
+              <span class="field-title">Alphabet (Σ)</span>
+              <small>Comma-separated symbols</small>
+            </label>
+            <input id="alphabetInput" value="0, 1" aria-label="Input alphabet" placeholder="0, 1">
+          </div>
+
+          <div class="field-card">
+            <label for="startSelect">
+              <span class="field-title">Start State (q₀)</span>
+              <small>Initial automaton state</small>
+            </label>
+            <select id="startSelect" aria-label="Start state"></select>
+          </div>
+        </div>
+
+        <!-- 3. Transitions (δ) - Table Only -->
+        <div class="transitions-card">
+          <div class="mode-header">
+            <div class="section-title">
+              TRANSITIONS (δ)
+              <span>Comma-separated destinations for each symbol; blank or ∅ for empty set</span>
+            </div>
+          </div>
+
+          <div id="tableEditor" class="table-scroll"></div>
+        </div>
+
+        <!-- 4. Input NFA Diagram (Below Table, clean, no simulation) -->
+        <div class="input-graph-card">
+          <div class="section-title">
+            INPUT NFA DIAGRAM
+            <span>State machine visualization</span>
+          </div>
+          <div class="viz-wrap viz-input-nfa">
+            <div class="viz-caption">
+              <span class="legend-start"></span> Start
+              <span class="legend-accept"></span> Accept
+            </div>
+            <div id="inputNfaGraph" class="graph" role="img" aria-label="Input NFA state diagram"></div>
+          </div>
+        </div>
+
+        <div class="input-panel-actions">
+          <button class="primary-button full-width" id="convertBtn" type="button">
+            <span>Convert NFA to DFA</span>
+            <span aria-hidden="true">↗</span>
+          </button>
+        </div>
+
+        <div class="panel-foot">
+          <span class="foot-icon">i</span> Standard NFA rules without ε-transitions. Empty transitions default to ∅.
+        </div>
+      </div>
+
+      <!-- 2. RIGHT: Converted DFA Diagram & Final Table (Clean, no simulation) -->
+      <div class="panel result-panel">
+        <div class="panel-heading">
+          <div>
+            <div class="step-label"><span>02</span> CONVERTED RESULT</div>
+            <h2>Final DFA Diagram &amp; Table <span class="state-count" id="stateCount">—</span></h2>
+          </div>
+        </div>
+
+        <div class="viz-wrap">
+          <div class="viz-caption">
+            <span class="legend-start"></span> Start
+            <span class="legend-accept"></span> Accept
+          </div>
+          <div id="dfaFinalGraph" class="graph" role="img" aria-label="Final DFA state diagram"></div>
+          <div id="graphEmpty" class="graph-empty">
+            <div class="empty-orbit">{q₀}</div>
+            <strong>Converted DFA Diagram</strong>
+            <span>Click "Convert NFA to DFA" to generate the final deterministic state machine.</span>
+          </div>
+        </div>
+
+        <div class="table-section">
+          <div class="section-title">
+            FINAL DFA TRANSITION TABLE
+            <span>All reachable subsets &amp; complete deterministic mappings</span>
+          </div>
+          <div id="dfaFinalTable" class="table-scroll dfa-table">
+            <div class="table-placeholder">Your final deterministic transition table appears here after conversion.
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 3. STEP BY STEP CONVERSION: Left = Input NFA Diagram | Right = Step by Step Simulation & Dynamic Table -->
+    <section class="panel conversion-section">
+      <div class="panel-heading">
+        <div>
+          <div class="step-label"><span>03</span> STEP-BY-STEP CONVERSION</div>
+          <h2>Subset Construction Process</h2>
+        </div>
+        <div class="step-index-badge" id="stepIndex">— / —</div>
+      </div>
+
+      <div class="stepper-box">
+        <div class="step-narrative">
+          <div class="step-icon">⚡</div>
+          <div class="step-narrative-text">
+            <div class="step-narrative-title">Current Construction Step</div>
+            <p id="stepText">Ready when you are. Convert to explore each subset computation step by step.</p>
+          </div>
+        </div>
+        <div class="step-controls">
+          <button id="prevStep" class="control-button" disabled type="button">← Previous Step</button>
+          <button id="nextStep" class="control-button" disabled type="button">Next Step →</button>
+          <button id="runSteps" class="run-button" disabled type="button"><span>▶</span> Auto Run</button>
+          <button id="resetSteps" class="reset-button" disabled aria-label="Reset walkthrough" type="button">↺</button>
+        </div>
+      </div>
+
+      <div class="step-conversion-grid">
+        <!-- Left: Step-by-Step Simulation Diagram -->
+        <div class="step-col">
+          <div class="col-header">
+            <span class="col-title">STEP-BY-STEP DFA FORMATION</span>
+            <span class="col-sub">Discovered states &amp; active transition highlighted</span>
+          </div>
+          <div class="viz-wrap viz-step-full">
+            <div class="viz-caption">
+              <span class="legend-start"></span> Start
+              <span class="legend-accept"></span> Accept
+              <span class="legend-current"></span> Current Edge
+            </div>
+            <div id="stepDfaGraph" class="graph" role="img" aria-label="Step-by-step DFA diagram"></div>
+          </div>
+        </div>
+
+        <!-- Right: Step-by-Step Transition Table -->
+        <div class="step-col">
+          <div class="col-header">
+            <span class="col-title">STEP-BY-STEP DFA TRANSITION TABLE</span>
+            <span class="col-sub">Rows &amp; cells revealed as steps are explored</span>
+          </div>
+          <div class="step-table-container">
+            <div id="stepDfaTable" class="table-scroll dfa-table step-table-full">
+              <div class="table-placeholder">Transition table rows will appear dynamically here as you step through.
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 4. STRING ACCEPTANCE TESTING -->
+    <section class="panel testing-section">
+      <div class="testing-header">
+        <div>
+          <div class="step-label"><span>04</span> VALIDATION &amp; SIMULATION</div>
+          <h2>String Acceptance Testing</h2>
+          <p class="testing-desc">Test input strings across the NFA and converted DFA simultaneously to verify
+            equivalence.</p>
+        </div>
+        <div class="testing-input-wrapper">
+          <div class="sim-input-row">
+            <input id="testString" placeholder="e.g. 0101" autocomplete="off" aria-label="Input string for simulation">
+            <button id="simulateBtn" class="primary-button" type="button">Test String <span>↗</span></button>
+          </div>
+          <div id="simResult" class="sim-result" aria-live="polite">Enter a string after converting your NFA.</div>
+        </div>
+      </div>
+
+      <div id="simTrace" class="trace-grid" hidden>
+        <article class="trace-card">
+          <div class="trace-title">
+            <span>NFA PARALLEL PATHS</span>
+            <span id="nfaVerdict" class="verdict"></span>
+          </div>
+          <div id="nfaTrace" class="trace-path"></div>
+          <div id="nfaGraph" class="mini-graph" aria-label="NFA simulation path"></div>
+        </article>
+
+        <article class="trace-card">
+          <div class="trace-title">
+            <span>DFA SINGLE PATH</span>
+            <span id="dfaVerdict" class="verdict"></span>
+          </div>
+          <div id="dfaTrace" class="trace-path"></div>
+          <div id="simStepText" class="sim-step-text"></div>
+        </article>
+
+        <div class="trace-controls">
+          <button class="control-button" id="prevSim" disabled type="button">← Previous Step</button>
+          <button class="control-button" id="nextSim" disabled type="button">Next Step →</button>
+          <button class="run-button" id="runSim" disabled type="button">▶ Auto Run</button>
+          <button class="reset-button" id="resetSim" disabled aria-label="Reset string simulation"
+            type="button">↺</button>
+          <span id="simStepIndex"></span>
+        </div>
+      </div>
+    </section>
+
+    <footer>
+      <span><strong>StateCraft TOC</strong> <span class="footer-dot">·</span> Interactive Theory of Computation
+        Studio</span>
+      <span>SUBSET CONSTRUCTION <span class="footer-dot">·</span> NFA → DFA</span>
+    </footer>
+  </main>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  <script src="/js/app.js"></script>
+</body>
+
+</html>
