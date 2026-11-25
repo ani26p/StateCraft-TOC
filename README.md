@@ -1,4 +1,4 @@
-# AutomataForge
+# StateCraft TOC
 
 An interactive, educational NFA → DFA simulator. Build a standard NFA without ε-transitions, follow reachable-state subset construction, inspect its DFA diagram and table, and test strings in both machines.
 
